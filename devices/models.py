@@ -34,3 +34,27 @@ class Device(models.Model):
 
     def __str__(self):
         return f"{self.name}"
+
+class DeviceCommand(models.Model):
+    class CommandType(models.TextChoices):
+        POWER = "POWER", "Power"
+        LIGHT = "LIGHT", "Light"
+        SPEED = "SPEED", "Speed"
+        TEMPRATURE = "TEMPRATURE", "Temprature"
+        LOCK = "LOCK", "Lock"
+        UNLOCK = "UNLOCK", "Unlock"
+
+    class CommandStatus(models.TextChoices):
+        PENDING = "PENDING", "Pending"
+        SUCCESS = "SUCCESS", "Success"
+        FAILED = "FAILED", "Failed"
+
+    device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='commands')
+    command = models.CharField(max_length=30, choices=CommandType.choices)
+    value = models.CharField(max_length=20, choices=CommandStatus.choices, default=CommandStatus.PENDING)
+    response = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    executed_at = models.DateTimeField(null = True, blank=True)
+
+    def __str__(self):
+        return f"{self.device.name} - {self.command}"
