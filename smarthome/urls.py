@@ -24,4 +24,5 @@ urlpatterns = [
     path('devices_api/', include('devices.urls')),
     path('notifications_api/', include('notifications.urls')),
     path('sensors_api/', include('sensors.urls')),
+    path('energy_api/', include('energy.urls'))
 ]

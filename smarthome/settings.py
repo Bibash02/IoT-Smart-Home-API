@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'devices',
     'notifications',
     'sensors',
+    'energy',
 
     'rest_framework',
     'rest_framework.authtoken',
