@@ -25,4 +25,5 @@ urlpatterns = [
     path('notifications_api/', include('notifications.urls')),
     path('sensors_api/', include('sensors.urls')),
     path('energy_api/', include('energy.urls')),
+    path('room_api/', include('room.urls')),
 ]
