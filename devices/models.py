@@ -51,7 +51,8 @@ class DeviceCommand(models.Model):
 
     device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='commands')
     command = models.CharField(max_length=30, choices=CommandType.choices)
-    value = models.CharField(max_length=20, choices=CommandStatus.choices, default=CommandStatus.PENDING)
+    value = models.CharField(max_length=50, blank=True, null=True)
+    status = models.CharField(max_length=20, choices=CommandStatus.choices, default=CommandStatus.PENDING)
     response = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     executed_at = models.DateTimeField(null = True, blank=True)
