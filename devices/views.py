@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from .models import DeviceCommand, Device
-from .serializers import DeviceSerializer, DeviceCommandSerializer
+from .serializers import DeviceSerializer, DeviceCommandSerializer, DeviceAuthSerializer
 from .services import execute_device_command
 
 # Create your views here.
@@ -45,4 +45,35 @@ class DeviceCommandAPIView(APIView):
         return Response({
             "message": "Command executed successfully.",
             "command": serializer.data
+        }, status=200)
+
+class DeviceAuthenticationAPIView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+        serializer = DeviceAuthSerializer(data = request.data)
+        serializer.is_valid(raise_exception=True)
+
+        device_uid = serializer.validated_data["device_uid"]
+        device_secret = serializer.validated_data["device_secret"]
+
+        try:
+            device = Device.objects.get(device_uid = device_uid)
+        except Device.DoesNotExist:
+            return Response({
+                "detail": "Invalid device credentials."
+            }, status=401)
+
+        if device.device_secret != device_secret:
+            return Response({
+                "detail": "Invalid device credentials."
+            }, status=401)
+
+        return Response({
+            "message": "Device authenticated successfully.",
+            "device_id": device.id,
+            "device_uid": device.device_uid,
+            "device_type": device.device_type,
+            "user_id": device.user_id
         }, status=200)

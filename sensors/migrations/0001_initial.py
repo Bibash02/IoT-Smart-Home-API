@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('devices', '0001_initial'),
+       
     ]
 
     operations = [

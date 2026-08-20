@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from room.models import Room
+import secrets
 
 # Create your models here.
 class Device(models.Model):
@@ -23,6 +24,7 @@ class Device(models.Model):
     room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='devices')
     name = models.CharField(max_length=50)
     device_uid = models.CharField(max_length=50, unique=True)
+    device_secret = models.CharField(max_length=128, unique=True, editable=False)
     device_type = models.CharField(max_length=30, choices=DeviceType.choices, default=DeviceType.OTHER)
     status = models.CharField(max_length=10, choices=DeviceStatus.choices, default=DeviceStatus.OF)
     is_online = models.BooleanField(default=False)
@@ -31,6 +33,12 @@ class Device(models.Model):
     last_seen = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if not self.device_secret:
+            self.device_secret = secrets.token_urlsafe(48)
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.name}"

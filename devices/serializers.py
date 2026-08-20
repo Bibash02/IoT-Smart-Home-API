@@ -27,6 +27,19 @@ class DeviceSerializer(serializers.ModelSerializer):
             'updated_at',
         ]
 
+        def validate_room(self, room):
+            request = self.context["request"]
+
+            if room.user != request.user:
+                raise serializers.ValidationError(
+                    "You cannot add a device to another user's room."
+                )
+            return room
+
+class DeviceAuthSerializer(serializers.Serializer):
+    device_uid = serializers.CharField(max_length = 100)
+    device_secret = serializers.CharField(max_length = 128, write_only = True)
+
 class DeviceCommandSerializer(serializers.ModelSerializer):
     class Meta:
         model = DeviceCommand
