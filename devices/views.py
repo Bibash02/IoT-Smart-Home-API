@@ -77,3 +77,8 @@ class DeviceAuthenticationAPIView(APIView):
             "device_type": device.device_type,
             "user_id": device.user_id
         }, status=200)
+
+class DeviceHeartbeatAPIView(APIView):
+    authentication_classes = []
+    permission_classes = []
+    
