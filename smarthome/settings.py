@@ -48,6 +48,8 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'rest_framework.authtoken',
+    'drf_yasg',
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -135,4 +137,8 @@ MAILERS = {
     'default': {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
+}
+
+REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
