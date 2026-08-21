@@ -40,6 +40,10 @@ class DeviceAuthSerializer(serializers.Serializer):
     device_uid = serializers.CharField(max_length = 100)
     device_secret = serializers.CharField(max_length = 128, write_only = True)
 
+class DeviceHeartbeatSerializer(serializers.Serializer):
+    device_uid = serializers.CharField(max_length = 100)
+    device_secret = serializers.CharField(max_length = 128, write_only = True)
+
 class DeviceCommandSerializer(serializers.ModelSerializer):
     class Meta:
         model = DeviceCommand

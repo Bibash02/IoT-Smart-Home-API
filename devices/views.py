@@ -5,8 +5,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from .models import DeviceCommand, Device
-from .serializers import DeviceSerializer, DeviceCommandSerializer, DeviceAuthSerializer
+from .serializers import DeviceSerializer, DeviceCommandSerializer, DeviceAuthSerializer, DeviceHeartbeatSerializer
 from .services import execute_device_command
+from datetime import timezone
 
 # Create your views here.
 class DeviceCommandAPIView(APIView):
@@ -81,4 +82,42 @@ class DeviceAuthenticationAPIView(APIView):
 class DeviceHeartbeatAPIView(APIView):
     authentication_classes = []
     permission_classes = []
+
+    def post(self, request):
+        serializer = DeviceHeartbeatSerializer(data = request.data)
+        serializer.is_valid(raise_exception=True)
+
+        device_uid = serializer.validated_data["device_uid"]
+        device_secret = serializer.validated_data["device_secret"]
+
+        try:
+            device = Device.objects.get(device_uid = device_uid)
+        except Device.DoesNotExist:
+            return Response({
+                "detail": "Invalid device credentials."
+            }, status=401)
+
+        if device.device_secret != device_secret:
+            return Response({
+                "detail": "Invalid device credentials."
+            }, status=401)
+
+        device.is_online = True
+        device.last_seen = timezone.now()
+
+        device.save(
+            update_fields = [
+                "is_online",
+                "last_seen",
+                "updated_at"
+            ]
+        )
+
+        return Response({
+            "message": "Heartbeat received.",
+            "device_uid": device.device_uid,
+            "is_online": device.is_online,
+            "last_seen": device.last_seen
+        }, status=200)
+    
     
