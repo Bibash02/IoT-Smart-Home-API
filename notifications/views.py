@@ -24,3 +24,35 @@ class NotificationDetailAPIView(generics.RetrieveDestroyAPIView):
 
     def get_queryset(self):
         return Notification.objects.filter(user = self.request.user)
+
+class NotificationMarkReadAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, pk):
+        try:
+            notification = Notification.objects.get(id = pk, user = request.user)
+        except Notification.DoesNotExist:
+            return Response({
+                "detail": "Notification not found."
+            }, status=404)
+        
+
+        notification.is_read = True
+        notification.save(update_fields=['is_read'])
+
+        return Response({
+            "message": "Notification marked as read.",
+            "notification_id": notification.id,
+            "is_read": notification.is_read
+        }, status=200)
+
+class NotificationMarkAllReadAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request):
+        updated_count = Notification.objects.filter(user = request.user, is_read = False).update(is_read = True)
+
+        return Response({
+            "message": "All notifications marked as read.",
+            "updated_count": updated_count
+        }, status=200)
