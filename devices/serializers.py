@@ -52,6 +52,7 @@ class DeviceCommandSerializer(serializers.ModelSerializer):
             'device',
             'command',
             'value',
+            'status',
             'response',
             'created_at',
             'executed_at'
@@ -59,6 +60,17 @@ class DeviceCommandSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'id',
             'status',
+            'response',
             'created_at',
             'executed_at'
         ]
+
+        def validate_device(self, device):
+            request = self.context['request']
+
+            if device.user != request.user:
+                raise serializers.ValidationError(
+                    "This device does not belong to you."
+                )
+
+            return device

@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated  
 from rest_framework import status
+from rest_framework import generics
 
 from .models import DeviceCommand, Device
 from .serializers import DeviceSerializer, DeviceCommandSerializer, DeviceAuthSerializer, DeviceHeartbeatSerializer
@@ -120,4 +121,23 @@ class DeviceHeartbeatAPIView(APIView):
             "last_seen": device.last_seen
         }, status=200)
     
-    
+class DeviceCommandListAPIView(generics.ListCreateAPIView):
+    serializer_class = DeviceCommandSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return DeviceCommand.objects.filter(
+            device__user = self.request.user
+        ).select_related(
+            'device'
+        ).order_by('-created_at')
+
+    def perform_create(self, serializer):
+        serializer.save()
+
+class DeviceCommandDetailAPIView(generics.RetrieveAPIView):
+    serializer_class = DeviceCommandSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return DeviceCommand.objects.filter(device__user = self.request.user)
