@@ -1,6 +1,7 @@
 from .models import AutomationRule
 from devices.models import DeviceCommand
 from notifications.services import create_notification
+from devices.services import execute_device_command
 
 def check_condition(operator, sensor_value, threshold):
     if operator == ">":
@@ -17,38 +18,74 @@ def check_condition(operator, sensor_value, threshold):
     return False
 
 def execute_automation(rule, sensor_value):
-    condition_met = check_condition(rule.operator, sensor_value, rule.threshold)
+
+    condition_met = check_condition(
+        rule.operator,
+        sensor_value,
+        rule.threshold
+    )
 
     if not condition_met:
         return {
             "executed": False,
-            "reason": "Conditon not satisfied."
+            "reason": "Condition not satisfied."
         }
 
-    # execute device action
-    command = DeviceCommand.objects.create(
-        device = rule.device,
-        command = rule.action,
-        status = "PENDING"
-    )
+    # Convert automation action
+    # into device command
+    if rule.action == "TURN_ON":
 
-    # create notification
+        command_type = "POWER"
+        value = "ON"
+
+    elif rule.action == "TURN_OFF":
+
+        command_type = "POWER"
+        value = "OFF"
+
+    else:
+
+        return {
+            "executed": False,
+            "reason": "Unsupported automation action."
+        }
+
+    # Execute device command
+    try:
+
+        command = execute_device_command(
+            device=rule.device,
+            command_type=command_type,
+            value=value
+        )
+
+    except ValueError as error:
+
+        return {
+            "executed": False,
+            "reason": str(error)
+        }
+
+    # Create notification
     create_notification(
-        user = rule.user, 
-        title="Automation executed.",
+        user=rule.user,
+        title="Automation Executed",
         message=(
-            f"Automation '{rule.name}' executed.",
+            f"Automation '{rule.name}' executed. "
             f"Device '{rule.device.name}' "
             f"action: {rule.action}."
         ),
         notification_type="AUTOMATION"
-        )
+    )
 
     return {
         "executed": True,
         "rule": rule.name,
         "device": rule.device.name,
         "action": rule.action,
+        "command": command.command,
+        "value": command.value,
+        "status": command.status,
         "command_id": command.id
     }
 
