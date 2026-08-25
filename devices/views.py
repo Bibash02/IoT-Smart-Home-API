@@ -96,12 +96,12 @@ class DeviceHeartbeatAPIView(APIView):
         except Device.DoesNotExist:
             return Response({
                 "detail": "Invalid device credentials."
-            }, status=401)
+            }, status=status.HTTP_401_UNAUTHORIZED)
 
         if device.device_secret != device_secret:
             return Response({
                 "detail": "Invalid device credentials."
-            }, status=401)
+            }, status=status.HTTP_401_UNAUTHORIZED)
 
         device.is_online = True
         device.last_seen = timezone.now()
@@ -120,7 +120,45 @@ class DeviceHeartbeatAPIView(APIView):
             "is_online": device.is_online,
             "last_seen": device.last_seen
         }, status=200)
-    
+
+class DeviceCommandCreateAPIView(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = DeviceCommandSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(
+            data = request.data
+        )
+
+        serializer.is_valid(raise_exception = True)
+
+        device = serializer.validated_data['device']
+        command_type = serializer.validated_data['command']
+        value = serializer.validated_data.get('value')
+
+        try:
+            command = execute_device_command(
+                device=device,
+                command_type=command_type,
+                value=value
+            )
+        except ValueError as error:
+            return Response({
+                'success': False,
+                'error': str(error)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({
+            'success': True,
+            'message': 'Command executed successfully.',
+            'data': DeviceCommandSerializer(
+                command,
+                context = {
+                    'request': request
+                }
+            ).data
+        },status=status.HTTP_201_CREATED)
+      
 class DeviceCommandListAPIView(generics.ListCreateAPIView):
     serializer_class = DeviceCommandSerializer
     permission_classes = [IsAuthenticated]
@@ -135,9 +173,22 @@ class DeviceCommandListAPIView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         serializer.save()
 
-class DeviceCommandDetailAPIView(generics.RetrieveAPIView):
+# class DeviceCommandDetailAPIView(generics.RetrieveAPIView):
+#     serializer_class = DeviceCommandSerializer
+#     permission_classes = [IsAuthenticated]
+
+#     def get_queryset(self):
+#         return DeviceCommand.objects.filter(device__user = self.request.user)
+
+class DeviceCommandHistoryAPIView(generics.ListAPIView):
     serializer_class = DeviceCommandSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return DeviceCommand.objects.filter(device__user = self.request.user)
+        device_id = self.kwargs['pk']
+
+        return DeviceCommand.objects.filter(
+            device_id = device_id,
+            device__user = self.request.user
+        ).select_related('device').order_by('-created_at')
+    
