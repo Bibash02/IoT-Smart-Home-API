@@ -29,3 +29,13 @@ class AutomationRule(models.Model):
 
     def __str__(self):
         return self.name
+
+class AutomationExecution(models.Model):
+    rule = models.ForeignKey(AutomationRule, on_delete=models.CASCADE, related_name='execution')
+    sensor_value = models.FloatField()
+    action = models.CharField(max_length=20)
+    success = models.BooleanField(default=True)
+    executed_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.rule.name} - {self.executed_at}"

@@ -51,3 +51,14 @@ def execute_automation(rule, sensor_value):
         "action": rule.action,
         "command_id": command.id
     }
+
+def process_sensor_reading(sensor, value):
+    rules = AutomationRule.objects.filter(sensor = sensor, is_enabled = True).select_related('device', 'user')
+
+    results = []
+
+    for rule in rules:
+        result = execute_automation(rule, value)
+        results.append(result)
+
+    return results
