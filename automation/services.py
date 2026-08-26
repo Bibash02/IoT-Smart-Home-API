@@ -1,4 +1,4 @@
-from .models import AutomationRule
+from .models import AutomationRule, AutomationExecution
 from devices.models import DeviceCommand
 from notifications.services import create_notification
 from devices.services import execute_device_command
@@ -39,6 +39,15 @@ def execute_automation(rule, sensor_value):
             ]
         )
 
+        AutomationExecution.objects.create(
+            rule = rule,
+            sensor_value = sensor_value,
+            action = rule.action,
+            device = rule.device,
+            status = AutomationExecution.ExecutionStatus.SKIPPED,
+            message = "Condition not satisfied."
+        )
+
         return {
             'executed': False,
             'reason': "Condition not satisfied."
@@ -53,6 +62,15 @@ def execute_automation(rule, sensor_value):
             ]
         )
 
+        AutomationExecution.objects.create(
+            rule=rule,
+            sensor_value=sensor_value,
+            action=rule.action,
+            device=rule.device,
+            status=AutomationExecution.ExecutionStatus.SKIPPED,
+            message="Condition already satisfied."
+        )
+
         return {
             'executed': False,
             'reason': 'Condition already satisfied.'
@@ -60,12 +78,21 @@ def execute_automation(rule, sensor_value):
 
     # condition changed false -> true
     if rule.action == "TURN_ON":
-        command_type = "POWER"
+        command_type = DeviceCommand.CommandType.POWER
         value = "ON"
     elif rule.action == "TURN_OFF":
-        command_type = "POWER"
+        command_type = DeviceCommand.CommandType.POWER
         value = "OFF"
     else:
+        AutomationExecution.objects.create(
+            rule = rule,
+            sensor_value = sensor_value,
+            action = rule.action,
+            device = rule.device,
+            status = AutomationExecution.ExecutionStatus.FAILED,
+            message = "Unsupported automation action."
+        )
+
         return {
             'executed': False,
             'reason': 'Unsupported automation action.'
@@ -79,6 +106,15 @@ def execute_automation(rule, sensor_value):
             value=value
         )
     except ValueError as error:
+        AutomationExecution.objects.create(
+            rule = rule,
+            sensor_value = sensor_value,
+            action = rule.action,
+            device = rule.device,
+            status = AutomationExecution.ExecutionStatus.FAILED,
+            message = str(error)
+        )
+
         return {
             'executed': False,
             'reason': str(error)
@@ -93,6 +129,17 @@ def execute_automation(rule, sensor_value):
             'last_triggered_at',
             'updated_at'
         ]   
+    )
+
+    # save execution history
+    execution = AutomationExecution.objects.create(
+        rule = rule,
+        sensor_value = sensor_value,
+        action = rule.action,
+        device = rule.device,
+        command = command,
+        status = AutomationExecution.ExecutionStatus.SUCCESS,
+        message = "Automation executed successfully."
     )
 
     # create notification
