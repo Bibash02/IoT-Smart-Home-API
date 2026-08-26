@@ -32,9 +32,18 @@ class AutomationRule(models.Model):
         return self.name
 
 class AutomationExecution(models.Model):
-    rule = models.ForeignKey(AutomationRule, on_delete=models.CASCADE, related_name='execution')
+    class ExecutionStatus(models.TextChoices):
+        SUCCESS = "SUCCESS", "Success"
+        FAILED = "FAILED", "Failed"
+        SKIPPED = "SKIPPED", "Skipped"
+
+    rule = models.ForeignKey(AutomationRule, on_delete=models.CASCADE, related_name='executions')
     sensor_value = models.FloatField()
     action = models.CharField(max_length=20)
+    device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='automation_executions')
+    status = models.CharField(max_length=20, choices=ExecutionStatus.choices)
+    message = models.TextField(blank=True)
+    command = models.ForeignKey('devices.DeviceCommand', on_delete=models.SET_NULL, null=True, blank=True, related_name='automation_executions')
     success = models.BooleanField(default=True)
     executed_at = models.DateTimeField(auto_now_add=True)
 
