@@ -191,4 +191,15 @@ class DeviceCommandHistoryAPIView(generics.ListAPIView):
             device_id = device_id,
             device__user = self.request.user
         ).select_related('device').order_by('-created_at')
-    
+
+class PendingDeviceCommandAPIView(generics.ListAPIView):
+    serializer_class = DeviceCommandSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return DeviceCommand.objects.filter(
+            device__user = self.request.user,
+            status = DeviceCommand.CommandStatus.PENDING
+        ).select_related(
+            'device'
+        ).order_by('created_at')

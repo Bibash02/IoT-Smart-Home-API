@@ -115,4 +115,24 @@ def execute_device_command(device, command_type, value=None):
             update_fields = ['status', 'response', 'executed_at']
         )
         raise
-    
+
+def create_device_command(device, command_type, value=None):
+    # check device ownership/validity elsewere
+    if not device.is_online:
+        raise ValueError("Device is offline.")
+
+    valid_commands = DeviceCommand.CommandType.value
+
+    if command_type not in valid_commands:
+        raise ValueError(
+            f"Invalid command: {command_type}"
+        )
+
+    command = DeviceCommand.objects.create(
+        device = device,
+        command = command_type,
+        value = value,
+        status = DeviceCommand.CommandStatus.PENDING
+    )
+
+    return command
