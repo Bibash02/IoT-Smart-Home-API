@@ -23,6 +23,7 @@ class AutomationRule(models.Model):
     operator = models.CharField(max_length=5, choices=ConditionOperator.choices)
     threshold = models.FloatField()
     action = models.CharField(max_length=20, choices=Action.choices)
+    last_triggered_at = models.DateTimeField(null=True, blank=True)
     is_enabled = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
