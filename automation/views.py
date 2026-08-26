@@ -60,3 +60,19 @@ class AutomationExecutionListAPIView(generics.ListAPIView):
             'device',
             'command'
         ).order_by('-executed_at')
+
+class AutomationRuleExecutionListAPIView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = AutomationExecutionSerializer
+
+    def get_queryset(self):
+        rule_id = self.kwargs['pk']
+
+        return AutomationExecution.objects.filter(
+            rule_id = rule_id,
+            rule__user = self.request.user
+        ).select_related(
+            'rule',
+            'device',
+            'command'
+        ).order_by('-executed_at')
