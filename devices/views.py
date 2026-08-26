@@ -238,3 +238,53 @@ class ClaimDeviceCommandAPIView(generics.GenericAPIView):
         return Response(
             DeviceCommandSerializer(command, context={'request': request}).data
         )
+
+class DeviceCommandResultAPIView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        try:
+            command = DeviceCommand.objects.get(
+                id = pk,
+                device__user = self.request.user
+            )
+        except DeviceCommand.DoesNotExist:
+            return Response({
+                "detail": "Command not found."
+            }, status=404)
+
+        result_status = request.data.get('status')
+        response_message = request.data.get('response', '')
+
+        valid_status = [
+            DeviceCommand.CommandStatus.SUCCESS,
+            DeviceCommand.CommandStatus.FAILED
+        ]
+
+        if result_status not in valid_status:
+            return Response({
+                "detail": "Status must be SUCCESS or FAILED."
+            }, status=400)
+
+        if command.status != (DeviceCommand.CommandStatus.PROCESSING):
+            return Response({
+                "detail": "Command is not currently processing."
+            }, status=400)
+
+        command.status = result_status
+        command.response = response_message
+        command.executed_at = timezone.now()
+        command.save(
+            update_fields=[
+                'status',
+                'response',
+                'executed_at'
+            ]
+        )
+
+        return Response({
+            "success": True,
+            "command_id": command.id,
+            'status': command.status,
+            'response': command.response
+        })
