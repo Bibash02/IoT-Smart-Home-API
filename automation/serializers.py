@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import AutomationRule
+from .models import AutomationRule, AutomationExecution
 
 class AutomationRuleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -20,4 +20,26 @@ class AutomationRuleSerializer(serializers.ModelSerializer):
                 })
 
             return data
+
+class AutomationExecutionSerializer(serializers.ModelSerializer):
+    rule_name = serializers.CharField(source = "rule.name", read_only = True)
+    device_name = serializers.CharField(source="rule.name", read_only = True)
+
+    class Meta:
+        model = AutomationExecution
+        fields = [
+            'id',
+            'rule',
+            'rule_name',
+            'sensor_value',
+            'action',
+            'device',
+            'device_name',
+            'status',
+            'message',
+            'command',
+            'executed_at'
+        ]
+
+
         

@@ -2,8 +2,8 @@ from django.shortcuts import render
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 
-from .models import AutomationRule
-from .serializers import AutomationRuleSerializer
+from .models import AutomationRule, AutomationExecution
+from .serializers import AutomationRuleSerializer, AutomationExecutionSerializer
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -47,4 +47,16 @@ class AutomationRuleToggleAPIView(APIView):
             "name": rule.name,
             "is_enabled": rule.is_enabled
         }, status=status.HTTP_200_OK)
-    
+
+class AutomationExecutionListAPIView(generics.ListAPIView):
+    serializer_class = AutomationExecutionSerializer
+    permission_classes= [IsAuthenticated]
+
+    def get_queryset(self):
+        return AutomationExecution.objects.filter(
+            rule__user = self.request.user
+        ).select_related(
+            'rule',
+            'device',
+            'command'
+        ).order_by('-executed_at')
