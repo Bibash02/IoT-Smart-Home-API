@@ -54,6 +54,7 @@ class DeviceCommand(models.Model):
 
     class CommandStatus(models.TextChoices):
         PENDING = "PENDING", "Pending"
+        PROCESSING = "PROCESSING", "Processing"
         SUCCESS = "SUCCESS", "Success"
         FAILED = "FAILED", "Failed"
 

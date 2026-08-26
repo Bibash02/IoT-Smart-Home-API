@@ -9,6 +9,7 @@ from .models import DeviceCommand, Device
 from .serializers import DeviceSerializer, DeviceCommandSerializer, DeviceAuthSerializer, DeviceHeartbeatSerializer
 from .services import execute_device_command
 from datetime import timezone
+from django.db import transaction
 
 # Create your views here.
 class DeviceCommandAPIView(APIView):
@@ -203,3 +204,37 @@ class PendingDeviceCommandAPIView(generics.ListAPIView):
         ).select_related(
             'device'
         ).order_by('created_at')
+
+class ClaimDeviceCommandAPIView(generics.GenericAPIView):
+    serializer_class = DeviceCommandSerializer
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        with transaction.atomic():
+            try:
+                command = (
+                    DeviceCommand.objects
+                    .select_for_update()
+                    .select_related('device')
+                    .get(
+                        id = pk,
+                        device__user = request.user,
+                        status = DeviceCommand.CommandStatus.PENDING
+                    )
+                )
+            except DeviceCommand.DoesNotExist:
+                return Response({
+                    "detail": "Pending command not found."
+                }, status=404)
+
+            command.status - (
+                DeviceCommand.CommandStatus.PROCESSING
+            )
+
+            command.save(
+                update_fields=['status']
+            )
+
+        return Response(
+            DeviceCommandSerializer(command, context={'request': request}).data
+        )
