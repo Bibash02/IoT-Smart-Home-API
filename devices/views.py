@@ -5,8 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework import generics
 
-from .models import DeviceCommand, Device
-from .serializers import DeviceSerializer, DeviceCommandSerializer, DeviceAuthSerializer, DeviceHeartbeatSerializer
+from .models import DeviceCommand, Device, DeviceToken
+from .serializers import DeviceSerializer, DeviceCommandSerializer, DeviceAuthSerializer, DeviceHeartbeatSerializer, DeviceTokenSerializer
 from .services import execute_device_command
 from datetime import timezone
 from django.db import transaction
@@ -288,3 +288,32 @@ class DeviceCommandResultAPIView(generics.GenericAPIView):
             'status': command.status,
             'response': command.response
         })
+
+class DeviceTokenCreateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, device_id):
+        try:
+            device = Device.objects.get(id = device_id, user = request.user)
+        except Device.DoesNotExist:
+            return Response({
+                "detail": "Device not found."
+            }, status=404)
+
+        token, created = DeviceToken.objects.get_or_create(device = device)
+
+        if not created:
+            token.token = DeviceToken().token
+            token.is_active = True
+            token.save(
+                update_fields = [
+                    'token',
+                    'is_active'
+                ]
+            )
+
+        return Response({
+            "success": True,
+            "message": "Device token generated.",
+            "data": DeviceTokenSerializer(token).data
+        }, status=201)

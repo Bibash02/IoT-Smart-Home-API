@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Device, DeviceCommand
+from .models import Device, DeviceCommand, DeviceToken
 
 class DeviceSerializer(serializers.ModelSerializer):
     class Meta:
@@ -74,3 +74,19 @@ class DeviceCommandSerializer(serializers.ModelSerializer):
                 )
 
             return device
+
+class DeviceTokenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DeviceToken
+        fields = [
+            'device',
+            'token',
+            'is_active',
+            'created_at',
+            'last_used_at'
+        ]
+        read_only_fields = [
+            'token',
+            'created_at',
+            'last_used_at'
+        ]
