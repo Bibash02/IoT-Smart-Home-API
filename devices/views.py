@@ -375,3 +375,54 @@ class IoTClaimCommandAPIView(APIView):
             "value": command.value,
             "status": command.status
         })
+
+class IoTCommandResultAPIView(APIView):
+    authentication_classes = [DeviceTokenAuthentication]
+    permission_classes = [IsIoDevice]
+
+    def post(self, request, command_id):
+        device = request.auth.device
+
+        try:
+            command = DeviceCommand.objects.get(id = command_id, device = device)
+        except DeviceCommand.DoesNotExist:
+            return Response({
+                "detail": "Command not found."
+            }, status=404)
+
+        if command.status != (
+            DeviceCommand.CommandStatus.PROCESSING
+        ):
+            return Response({
+                "detail": "Command is not processing."
+            }, status=400)
+
+        result = request.data.get('status')
+
+        response_message = request.data.get('response', '')
+
+        if result not in [
+            DeviceCommand.CommandStatus.SUCCESS,
+            DeviceCommand.CommandStatus.FAILED
+        ]:
+            return Response ({
+                "detail": "Invalid command result."
+            }, status=400)
+
+        command.status = result
+        command.response = response_message
+        command.executed_at = timezone.now()
+
+        command.save(
+            update_fields=[
+                'status',
+                'response',
+                'executed_at'
+            ]
+        )
+
+        return Response({
+            "success": True,
+            "command_id": command.id,
+            "status": command.status
+        })
