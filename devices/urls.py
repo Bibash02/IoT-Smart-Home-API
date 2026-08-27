@@ -11,6 +11,7 @@ urlpatterns = [
     path('device/commands/pending/', PendingDeviceCommandAPIView.as_view(), name='commands-pending'),
     path('device/commands/<int:pk>/claim/', ClaimDeviceCommandAPIView.as_view(), name='commands-claim'),
     path('device/commands/<int:pk>/result/', DeviceCommandResultAPIView.as_view(), name='commands-result'),
-    path('device/<int:device_id>/token/', DeviceTokenCreateAPIView.as_view(), name='device-token')
+    path('device/<int:device_id>/token/', DeviceTokenCreateAPIView.as_view(), name='device-token'),
+    path('device/iot/commands/pending/', IoPendingCommandAPIView.as_view(), name='iot-pending-commands'),
 
 ]

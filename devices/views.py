@@ -10,6 +10,8 @@ from .serializers import DeviceSerializer, DeviceCommandSerializer, DeviceAuthSe
 from .services import execute_device_command
 from datetime import timezone
 from django.db import transaction
+from .permissions import IsIoDevice
+from .authentication import DeviceTokenAuthentication
 
 # Create your views here.
 class DeviceCommandAPIView(APIView):
@@ -317,3 +319,23 @@ class DeviceTokenCreateAPIView(APIView):
             "message": "Device token generated.",
             "data": DeviceTokenSerializer(token).data
         }, status=201)
+
+class IoPendingCommandAPIView(APIView):
+    authentication_classes = [DeviceTokenAuthentication]
+    permission_classes = [IsIoDevice]
+
+    def get(self, request):
+        device = request.auth.device
+
+        commands = DeviceCommand.objects.filter(
+            device = device,
+            status = DeviceCommand.CommandStatus.PENDING
+        ).order_by("created_at")
+
+        serializer = DeviceCommandSerializer(commands, many = True)
+
+        return Response({
+            "success": True,
+            "device": device.id,
+            "commands": serializer.data
+        })
