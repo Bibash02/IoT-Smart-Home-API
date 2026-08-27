@@ -339,3 +339,39 @@ class IoPendingCommandAPIView(APIView):
             "device": device.id,
             "commands": serializer.data
         })
+
+class IoTClaimCommandAPIView(APIView):
+    authentication_classes = [DeviceTokenAuthentication]
+    permission_classes = [IsIoDevice]
+
+    def post(self, request, command_id):
+        device = request.auth.device
+
+        try:
+            command = DeviceCommand.objects.get(
+                id = command_id,
+                device = device,
+                status = DeviceCommand.CommandStatus.PENDING
+            )
+        except DeviceCommand.DoesNotExist:
+            return Response ({
+                "detail": "Pending command not found."
+            }, status=404)
+
+        command.status = (
+            DeviceCommand.CommandStatus.PROCESSING
+        )
+
+        command.save(
+            update_fields=[
+                'status'
+            ]
+        )
+
+        return Response({
+            "success": True,
+            "command_id": command.id,
+            'command': command.command,
+            "value": command.value,
+            "status": command.status
+        })
