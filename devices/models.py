@@ -68,3 +68,19 @@ class DeviceCommand(models.Model):
 
     def __str__(self):
         return f"{self.device.name} - {self.command}"
+
+class DeviceToken(models.Model):
+    device = models.OneToOneField(Device, on_delete=models.CASCADE, related_name='token')
+    token = models.CharField(max_length=128, unique=True, editable=False)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_used_at = models.DateTimeField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.token:
+            self.token = secrets.token_urlsafe(64)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.device.name} Token"
+    
