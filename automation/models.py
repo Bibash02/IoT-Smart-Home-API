@@ -40,7 +40,7 @@ class AutomationExecution(models.Model):
     rule = models.ForeignKey(AutomationRule, on_delete=models.CASCADE, related_name='executions')
     sensor_value = models.FloatField()
     action = models.CharField(max_length=20)
-    device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='automation_executions')
+    device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='automation_executions', null=True, blank=True)
     status = models.CharField(max_length=20, choices=ExecutionStatus.choices)
     message = models.TextField(blank=True)
     command = models.ForeignKey('devices.DeviceCommand', on_delete=models.SET_NULL, null=True, blank=True, related_name='automation_executions')
