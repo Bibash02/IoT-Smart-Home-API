@@ -10,4 +10,8 @@ urlpatterns = [
     path('energy/devices/<int:device_id>/daily/', DailyEnergyAPIView.as_view(), name='daily-energy'),
     path('energy/monthly/', MonthlyEnergyAPIView.as_view(), name='monthly-energy'),
     path('energy/devices/<int:device_id>/readings/', DeviceEnergyReadingAPIView.as_view(), name='device-energy-readings'),
+
+    path('energy/summery/', EnergySummaryAPIView.as_view(), name='energy-summery'),
+    path('energy/today/', TodayDeviceEnergyAPIView.as_view(), name='today-energy'),
+    path('energy/weekly/', WeeklyEnergyAPIView.as_view(), name='weekly-energy'),
 ]

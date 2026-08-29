@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics
+from rest_framework.views import APIView
 
 from .models import EnergyReading
 from .serializers import EnergyReadingSerializer
@@ -12,7 +13,7 @@ from django.db.models import Sum
 from django.utils import timezone
 
 from django.db.models.functions import TruncMonth
-from .services import get_daily_energy
+from .services import get_daily_energy, get_energy_summary,  get_weekly_energy, get_today_device_usage
 
 # Create your views here.
 class EnergyReadingListCreatAPIView(generics.ListCreateAPIView):
@@ -168,4 +169,32 @@ class DeviceEnergySummeryAPIView(generics.GenericAPIView):
 
         return Response(data)
 
+class EnergySummaryAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        data = get_energy_summary(request.user)
+
+        return Response(data)
+
+class TodayDeviceEnergyAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        data = get_today_device_usage(request.user)
+
+        return Response({
+            "date": timezone.localdate(),
+            "devices": data
+        })
+
+class WeeklyEnergyAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        data = get_weekly_energy(request.user)
+
+        return Response({
+            "days": data
+        })
 
