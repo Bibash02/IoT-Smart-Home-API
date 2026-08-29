@@ -1,5 +1,6 @@
 from django.utils import timezone
 from devices.models import Device
+from notifications.services import create_notification
 
 def process_device_status(device_uid, status, ip_address = None):
     try:
@@ -18,6 +19,8 @@ def process_device_status(device_uid, status, ip_address = None):
             "reason": "Invalid device status."
         }
 
+    was_offline = not device.is_online
+
     device.is_online = {
         status == "ONLINE"
     }
@@ -35,6 +38,18 @@ def process_device_status(device_uid, status, ip_address = None):
             "updated_at"
         ]
     )
+
+    # Device come back online
+    if (status == "ONLINE" and was_offline):
+        create_notification(
+            user = device.user,
+            title = "Device Online",
+            message=(
+                f"Device {device.name}"
+                f"is back online"
+            ),
+            notification_type="DEVICE"
+        )
 
     return {
         "success": True,

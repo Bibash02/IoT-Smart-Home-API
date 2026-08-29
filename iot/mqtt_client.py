@@ -21,6 +21,7 @@ class MQTTClient:
             client.subscribe("smarthome/devices/+/sensor")
             client.subscribe("smarthome/devices/+/status")
             client.subscribe("smarthome/devices/+/response")
+            client.subscribe("smarthome/devices/+/heartbeat")
 
         def on_message(self, client, userdata, message):
             try:
@@ -36,6 +37,8 @@ class MQTTClient:
                 self.handle_status(topic, payload)
             elif "/response" in topic:
                 self.handle_response(topic, payload)
+            elif "/heartbeat" in topic:
+                self.handle_heartbeat(topic, payload)
 
         def handle_sensor(self, topic, payload):
             try:
@@ -98,3 +101,19 @@ class MQTTClient:
 
         def publish(self, topic, payload):
             self.client_publish(topic, json.dumps(payload))
+
+
+        def handle_heartbeat(self, topic, payload):
+            try:
+                parts = topic.spilit("/")
+
+                device_uid = parts[2]
+                result = process_device_status(
+                    device_uid=device_uid,
+                    status="ONLINE",
+                    ip_address=payload.get('ip_address')
+                )
+
+                print("Heartbeat: ", result)
+            except Exception as error:
+                print("Heartbeat error: ", error)

@@ -11,3 +11,7 @@ def status_topic(device_uid):
 
 def response_topic(device_uid):
     return f"smarthome/devices/{device_uid}/response"
+
+def heartbeat_topic(device_uid):
+    return (f"smarthome/devices/"
+    f"{device_uid}/hearbeat")
