@@ -22,6 +22,7 @@ class MQTTClient:
             client.subscribe("smarthome/devices/+/status")
             client.subscribe("smarthome/devices/+/response")
             client.subscribe("smarthome/devices/+/heartbeat")
+            client.subscribe("smarthome/devices/+/energy")
 
         def on_message(self, client, userdata, message):
             try:
@@ -39,6 +40,8 @@ class MQTTClient:
                 self.handle_response(topic, payload)
             elif "/heartbeat" in topic:
                 self.handle_heartbeat(topic, payload)
+            elif "/energy" in topic:
+                self.handle_energy(topic, payload)
 
         def handle_sensor(self, topic, payload):
             try:
@@ -117,3 +120,32 @@ class MQTTClient:
                 print("Heartbeat: ", result)
             except Exception as error:
                 print("Heartbeat error: ", error)
+
+        def handle_energy(self, topic, payload):
+            try:
+                parts = topic.spilit('/')
+                device_uid = parts[2]
+                voltage = payload.get('voltage')
+                current = payload.get('current')
+                power = payload.get('power')
+
+                if power is None:
+                    print("Power value is missing.")
+                    return
+
+                from devices.models import Device
+                from energy.services import create_energy_reading
+
+                device = Device.objects.gt(device_uid = device_uid)
+
+                reading = create_energy_reading(
+                    device=device,
+                    voltage=voltage,
+                    current=current,
+                    power=power
+                )
+
+                print("Energy reading created: ", reading.id)
+
+            except Exception as error:
+                print("Energy processing error: ", error)

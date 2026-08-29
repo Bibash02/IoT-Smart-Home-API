@@ -12,6 +12,7 @@ from django.db.models import Sum
 from django.utils import timezone
 
 from django.db.models.functions import TruncMonth
+from .services import get_daily_energy
 
 # Create your views here.
 class EnergyReadingListCreatAPIView(generics.ListCreateAPIView):
@@ -30,6 +31,18 @@ class EnergyReadingDetailAPIView(generics.RetrieveDestroyAPIView):
 
     def get_queryset(self):
         return EnergyReading.objects.filter(device__user = self.request.user)
+
+class DeviceEnergyReadingAPIView(generics.ListAPIView):
+    serializer_class = EnergyReadingSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        device_id = self.kwargs['device_id']
+
+        return EnergyReading.objects.filter(
+            device_id = device_id,
+            device__user = self.request.user
+        ).select_related('device')
 
 class DeviceEnergyHistoryAPIView(generics.ListAPIView):
     serializer_class = EnergyReadingSerializer
@@ -70,19 +83,34 @@ class DeviceLatestEnergyAPIView(generics.RetrieveAPIView):
 class DailyEnergyAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        today = timezone.localdate()
+    def get(self, request, device_id):
+        from devices.models import Device
+        try:
+            device = Device.objects.get(
+                id = device_id,
+                user = request.user
+            )
+        except Device.DoesNotExist:
+            return Response({
+                "detail": "Device not found."
+            }, status=404)
 
-        total_energy = EnergyReading.objects.filter(
-            device__user = self.request.user, recorded_at__date = today
-            ).aggregate(
-                total = Sum('energy_consumed')
-            )['total'] or 0
+        result = get_daily_energy(device)
 
-        return Response({
-            "date": today,
-            'total_energy_consumed': round(total_energy, 3), 'unit': 'kwh'
-        })
+        return Response(result)
+    
+        # today = timezone.localdate()
+
+        # total_energy = EnergyReading.objects.filter(
+        #     device__user = self.request.user, recorded_at__date = today
+        #     ).aggregate(
+        #         total = Sum('energy_consumed')
+        #     )['total'] or 0
+
+        # return Response({
+        #     "date": today,
+        #     'total_energy_consumed': round(total_energy, 3), 'unit': 'kwh'
+        # })
 
 class MonthlyEnergyAPIView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
