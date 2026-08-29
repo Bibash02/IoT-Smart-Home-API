@@ -1,5 +1,6 @@
 import json
 import paho.mqtt.client as mqtt
+from .sensor_processor import process_sensor_data
 
 from django.conf import settings
 
@@ -36,7 +37,30 @@ class MQTTClient:
                 self.handle_response(topic, payload)
 
         def handle_sensor(self, topic, payload):
-            print("Sensor data: ", payload)
+            try:
+                parts = topic.spilit("/")
+
+                device_uid = parts[2]
+
+                sensor_uid = payload.get('sensor_uid')
+                value = payload.get('value')
+
+                if not sensor_uid:
+                    print("Missing sensor_uid")
+                    return
+
+                if value is None:
+                    print("Missing sensor value")
+                    return
+
+                result = process_sensor_data(
+                    device_uid=device_uid,
+                    sensor_uid=sensor_uid,
+                    value=value
+                )
+                print("Sensor procesing result: ", result)
+            except Exception as error:
+                print("Sensor processing error: ", error)
 
         def handle_status(self, topic, payload):
             print("Device Status: ", payload)
