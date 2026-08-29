@@ -14,6 +14,7 @@ class Sensor(models.Model):
         WATER = "WATER", "Water"
         OTHER = "OTHER", "Other"
 
+    sensor_uid = models.CharField(max_length=100, unique=True)
     device = models.ForeignKey(Device, on_delete=models.CASCADE, related_name='sensors')
     name = models.CharField(max_length=50)
     sensor_type = models.CharField(max_length=30, choices=SensorType.choices, default=SensorType.OTHER)
