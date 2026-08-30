@@ -144,12 +144,12 @@ def execute_automation(rule, sensor_value):
 
     # create notification
     create_notification(
-        user = rule.user,
-        title = 'Automation executed.',
+        user=rule.user,
+        title="Automation executed.",
         message=(
-            f"Automation: {rule.name}"
-            f"Device: {rule.device.name}"
-            f"action: {rule.action}"
+            f"Automation '{rule.name}' executed. "
+            f"Device '{rule.device.name}' "
+            f"action: {rule.action}."
         ),
         notification_type="AUTOMATION"
     )
