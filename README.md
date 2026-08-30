@@ -1057,15 +1057,3 @@ API Security
 Postman
 Swagger / OpenAPI
 ```
-
----
-
-# ⭐ Support
-
-If you find this project useful, consider giving the repository a ⭐ on GitHub.
-
----
-
-# 📄 License
-
-This project is licensed under the **MIT License**.
