@@ -563,19 +563,19 @@ smart-home-api/
 │
 ├── manage.py
 │
-├── config/
+├── smarthome/
 │   ├── settings.py
 │   ├── urls.py
 │   ├── wsgi.py
 │   └── asgi.py
 │
-├── users/
+├── accounts/
 │   ├── models.py
 │   ├── serializers.py
 │   ├── views.py
 │   └── urls.py
 │
-├── rooms/
+├── room/
 │   ├── models.py
 │   ├── serializers.py
 │   ├── views.py
@@ -615,7 +615,7 @@ smart-home-api/
 │   ├── services.py
 │   └── urls.py
 │
-├── mqtt/
+├── iot/
 │   ├── client.py
 │   ├── handlers.py
 │   └── topics.py
