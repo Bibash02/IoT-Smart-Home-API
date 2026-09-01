@@ -719,16 +719,16 @@ Create a `.env` file:
 SECRET_KEY=your-secret-key
 DEBUG=True
 
-DB_NAME=smart_home
+DB_NAME=smarthome_db
 DB_USER=postgres
-DB_PASSWORD=your-password
+DB_PASSWORD=postgres
 DB_HOST=localhost
 DB_PORT=5432
 
 MQTT_BROKER=localhost
 MQTT_PORT=1883
-MQTT_USERNAME=
-MQTT_PASSWORD=
+MQTT_USERNAME= ""
+MQTT_PASSWORD= ""
 ```
 
 > Never commit your `.env` file to GitHub.
