@@ -11,21 +11,25 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
 from pathlib import Path
+import os
+
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / '.env')
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-f0l7!w=st!tj9$(yf)wjs_+nixo6w(08fw2r(o@k%roo!#(i!l'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-local-development-only-change-me')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True').strip().lower() in {'1', 'true', 'yes', 'on'}
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [host.strip() for host in os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',') if host.strip()]
 
 
 # Application definition
@@ -38,13 +42,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'accounts',
-    'room',
-    'automation',
-    'devices',
-    'notifications',
-    'sensors',
-    'energy',
+    'apps.accounts.apps.AccountsConfig',
+    'apps.room.apps.RoomConfig',
+    'apps.automation.apps.AutomationConfig',
+    'apps.devices.apps.DevicesConfig',
+    'apps.notifications.apps.NotificationsConfig',
+    'apps.sensors.apps.SensorsConfig',
+    'apps.energy.apps.EnergyConfig',
+    'apps.iot.apps.IotConfig',
 
     'rest_framework',
     'rest_framework.authtoken',
@@ -87,23 +92,20 @@ WSGI_APPLICATION = 'smarthome.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
-DATABASES = {
-    'default': {
-    'ENGINE': 'django.db.backends.postgresql',
-    'NAME': 'smarthome_db',
-    'USER': 'postgres',
-    'PASSWORD': 'postgres',
-    'HOST': 'localhost', 
-    'PORT': '5432', 
+DB_ENGINE = os.getenv('DB_ENGINE', 'django.db.backends.sqlite3').strip()
+if DB_ENGINE == 'django.db.backends.sqlite3':
+    DATABASES = {'default': {'ENGINE': DB_ENGINE, 'NAME': os.getenv('DB_NAME', str(BASE_DIR / 'db.sqlite3'))}}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': DB_ENGINE,
+            'NAME': os.getenv('DB_NAME', ''),
+            'USER': os.getenv('DB_USER', ''),
+            'PASSWORD': os.getenv('DB_PASSWORD', ''),
+            'HOST': os.getenv('DB_HOST', 'localhost'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+        }
     }
-}
 
 
 # Password validation
@@ -146,11 +148,7 @@ STATIC_URL = 'static/'
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
-MAILERS = {
-    'default': {
-        'BACKEND': 'django.core.mail.backends.console.EmailBackend',
-    },
-}
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
@@ -162,10 +160,10 @@ SPECTACULAR_SETTINGS = {
     'VERSION': '1.0.0',
 }
 
-MQTT_BROKER_HOST = "localhost"
-MQTT_BROKER_PORT = 1883
+MQTT_BROKER_HOST = os.getenv('MQTT_BROKER_HOST', 'localhost')
+MQTT_BROKER_PORT = int(os.getenv('MQTT_BROKER_PORT', '1883'))
 
-MQTT_USERNAME = ""
-MQTT_PASSWORD = ""
+MQTT_USERNAME = os.getenv('MQTT_USERNAME', '')
+MQTT_PASSWORD = os.getenv('MQTT_PASSWORD', '')
 
-MQTT_KEEPALIVE = 60
+MQTT_KEEPALIVE = int(os.getenv('MQTT_KEEPALIVE', '60'))

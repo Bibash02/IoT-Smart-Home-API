@@ -560,70 +560,17 @@ ESP32 → MQTT → EnergyReading → Analytics → Dashboard
 
 ```text
 smart-home-api/
-│
 ├── manage.py
-│
-├── smarthome/
-│   ├── settings.py
-│   ├── urls.py
-│   ├── wsgi.py
-│   └── asgi.py
-│
-├── accounts/
-│   ├── models.py
-│   ├── serializers.py
-│   ├── views.py
-│   └── urls.py
-│
-├── room/
-│   ├── models.py
-│   ├── serializers.py
-│   ├── views.py
-│   └── urls.py
-│
-├── devices/
-│   ├── models.py
-│   ├── serializers.py
-│   ├── views.py
-│   ├── services.py
-│   └── urls.py
-│
-├── sensors/
-│   ├── models.py
-│   ├── serializers.py
-│   ├── views.py
-│   └── urls.py
-│
-├── automation/
-│   ├── models.py
-│   ├── serializers.py
-│   ├── views.py
-│   ├── services.py
-│   └── urls.py
-│
-├── notifications/
-│   ├── models.py
-│   ├── serializers.py
-│   ├── views.py
-│   ├── services.py
-│   └── urls.py
-│
-├── energy/
-│   ├── models.py
-│   ├── serializers.py
-│   ├── views.py
-│   ├── services.py
-│   └── urls.py
-│
-├── iot/
-│   ├── client.py
-│   ├── handlers.py
-│   └── topics.py
-│
-├── requirements.txt
-├── .env
-├── .gitignore
-└── README.md
+├── smarthome/                 # Django project settings and URL routing
+└── apps/                      # Django applications
+    ├── accounts/
+    ├── automation/
+    ├── devices/
+    ├── energy/
+    ├── iot/                    # MQTT services and management commands
+    ├── notifications/
+    ├── room/
+    └── sensors/
 ```
 
 ---
@@ -713,22 +660,18 @@ pip install -r requirements.txt
 
 ## 4. Configure environment variables
 
-Create a `.env` file:
+Copy `.env.example` to `.env` and adjust values for your setup. The checked-in example uses SQLite for local development. To use PostgreSQL, set `DB_ENGINE=django.db.backends.postgresql` and fill in `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, and `DB_PORT`.
 
 ```env
-SECRET_KEY=your-secret-key
+SECRET_KEY=replace-with-a-random-secret-key
 DEBUG=True
-
-DB_NAME=smarthome_db
-DB_USER=postgres
-DB_PASSWORD=postgres
-DB_HOST=localhost
-DB_PORT=5432
-
-MQTT_BROKER=localhost
-MQTT_PORT=1883
-MQTT_USERNAME= ""
-MQTT_PASSWORD= ""
+ALLOWED_HOSTS=localhost,127.0.0.1
+DB_ENGINE=django.db.backends.sqlite3
+DB_NAME=db.sqlite3
+MQTT_BROKER_HOST=localhost
+MQTT_BROKER_PORT=1883
+MQTT_USERNAME=
+MQTT_PASSWORD=
 ```
 
 > Never commit your `.env` file to GitHub.

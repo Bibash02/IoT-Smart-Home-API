@@ -20,13 +20,13 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, Sp
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('accounts_api/', include('accounts.urls')),
-    path('automation_api/', include('automation.urls')),
-    path('devices_api/', include('devices.urls')),
-    path('notifications_api/', include('notifications.urls')),
-    path('sensors_api/', include('sensors.urls')),
-    path('energy_api/', include('energy.urls')),
-    path('room_api/', include('room.urls')),
+    path('accounts_api/', include('apps.accounts.urls')),
+    path('automation_api/', include('apps.automation.urls')),
+    path('devices_api/', include('apps.devices.urls')),
+    path('notifications_api/', include('apps.notifications.urls')),
+    path('sensors_api/', include('apps.sensors.urls')),
+    path('energy_api/', include('apps.energy.urls')),
+    path('room_api/', include('apps.room.urls')),
 
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name = 'schema'), name='swagger-ui'),
