@@ -1,22 +1,25 @@
-from django.shortcuts import render
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.views import APIView
+from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .serializers import *
+from drf_spectacular.utils import extend_schema
+from .serializers import LoginSerializer, RegisterSerializer
 from rest_framework.authtoken.models import Token
-from django.contrib.auth import authenticate
 
 # Create your views here.
 @api_view(['GET'])
 def test(request):
     return Response("Successfully connected to the API.")
 
-class RegisterAPIView(APIView):
+class RegisterAPIView(GenericAPIView):
+    serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
 
+    @extend_schema(request=RegisterSerializer)
     def post(self, request):
-        serializer = RegisterSerializer(data = request.data)
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
 
@@ -29,11 +32,13 @@ class RegisterAPIView(APIView):
             'email': user.email,
         }, status=201)
 
-class LoginAPIView(APIView):
+class LoginAPIView(GenericAPIView):
+    serializer_class = LoginSerializer
     permission_classes = [AllowAny]
 
+    @extend_schema(request=LoginSerializer)
     def post(self, request):
-        serializer = LoginSerializer(data = request.data)
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         email = serializer.validated_data['email']
